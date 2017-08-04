@@ -106,6 +106,7 @@ theme <- theme_bw() +
               strip.text = element_text(size = 12))
 
 # Make a histogram of step totals
+png(filename = "plot1.png")
 plot1 <- ggplot(total.steps, aes(x = total.steps))
 plot1 <- plot1 + geom_histogram(binwidth = 2000, color = "black",
                                 fill = "royalblue", boundary = 0) +
@@ -115,9 +116,13 @@ plot1 <- plot1 + geom_histogram(binwidth = 2000, color = "black",
         theme +
         ylim(0,25)
 plot1
+dev.off()
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+```
+## png 
+##   2
+```
 <br>
 
 Based on the histogram, it looks like the average number of steps this guy (let's call him Todd) takes in a day is probably somewhere around 11,000 steps. Let's check:
@@ -159,6 +164,7 @@ pattern.steps <- activity %>%
         summarize(mean = mean(steps)) %>%
         arrange(time)
 
+png(filename = "plot2.png")
 plot2 <- ggplot(pattern.steps, aes(time, mean))
 plot2 <- plot2 + geom_line() +
         scale_x_datetime(date_labels = "%H:%M") +
@@ -167,9 +173,13 @@ plot2 <- plot2 + geom_line() +
              y = "Number of steps") +
         theme
 plot2
+dev.off()
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+```
+## png 
+##   2
+```
 <br>
 
 It looks like Todd is walking a lot during the day and hardly at all during the night. I think we can safely conclude that Todd is not a sleepwalker. There's also a sharp peak in activity just before 9:00 AM. Maybe Todd likes to go running in the morning? Let's find out exactly what time corresponds to the peak:
@@ -271,6 +281,7 @@ total.steps2 <- activity2 %>%
         summarize(total.steps = sum(steps))
 
 # Make a histogram
+png(filename = "plot3.png")
 plot3 <- ggplot(total.steps2, aes(x = total.steps))
 plot3 <- plot3 + geom_histogram(binwidth = 2000, boundary = 0,
                                 col = "black", fill = "tomato") +
@@ -280,9 +291,13 @@ plot3 <- plot3 + geom_histogram(binwidth = 2000, boundary = 0,
         ylim(0,25) +
         theme
 plot3
+dev.off()
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
+```
+## png 
+##   2
+```
 <br>
 
 It looks basically the same as before. In fact, if you put it right next to the first graph, you'll find that the only bar that changed is the one right in the middle where the mean is:
@@ -301,12 +316,22 @@ plot3.1 <- ggplot(total.steps2, aes(total.steps)) +
         ylim(0, 25) +
         labs(x = "Number of steps",
              y = "Number of days")
+png(filename = "plot4.png")
 plot4 <- plot_grid(plot1.3, plot3.1, align = "h", labels = c("NA's omitted", "Imputed values"),
                      hjust = -.75)
 plot4
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+
+```r
+dev.off()
+```
+
+```
+## png 
+##   3
+```
 <br>
 
 You can also calculate the new mean and median directly to compare them:
@@ -364,6 +389,7 @@ wday.patterns <- activity2 %>%
         arrange(day.type, time)
 
 labels <- c(weekday = "Weekdays", weekend = "Weekends") # Make strip labels prettier
+png(filename = "plot5.png")
 plot5 <- ggplot(wday.patterns, aes(time, mean)) # Make the plot
 plot5 <- plot5 + geom_line() +
         facet_wrap(~day.type, nrow = 2,
@@ -375,9 +401,13 @@ plot5 <- plot5 + geom_line() +
              y = "Number of steps") +
         theme
 plot5
+dev.off()
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+```
+## png 
+##   2
+```
 <br>
 
 Perfect! It looks, well, mostly the same on weekdays and weekends. I guess Todd's got a pretty good routine going for him!
