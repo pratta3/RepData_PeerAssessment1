@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 # Tracking Your Steps
 
@@ -20,7 +15,8 @@ I've moved my working directory into the **RepData_PeerAssessment1** folder, so 
 the zipped csv file containing the data:
 
 
-```{r}
+
+```r
 file <- unz(description = "./activity.zip", filename = "activity.csv")
 activity <- read.csv(file = file)
 ```
@@ -41,7 +37,8 @@ The first thing I'm going to do is add some variables to the dataset:
 <br>
 Here's the code and a peek at what the dataset now looks like:
 
-```{r message = FALSE}
+
+```r
 library(lubridate)
 library(dplyr)
 library(stringr)
@@ -65,6 +62,17 @@ activity <- activity %>%
 
 head(activity, 3)
 ```
+
+```
+##   steps       date interval           date.time                time
+## 1    NA 2012-10-01        0 2012-10-01 00:00:00 2017-08-03 00:00:00
+## 2    NA 2012-10-01        5 2012-10-01 00:05:00 2017-08-03 00:05:00
+## 3    NA 2012-10-01       10 2012-10-01 00:10:00 2017-08-03 00:10:00
+##   day.type
+## 1  weekday
+## 2  weekday
+## 3  weekday
+```
 <br>
 
 Now let's start answering some questions.  
@@ -79,7 +87,8 @@ At some point we may have to do something about the missing values in the **step
 let's just omit them. First we'll calculate the total number of steps that were taken for each day
 in the dataset and look at its distribution.
 
-```{r}
+
+```r
 # Calculate step totals by date (NA's omitted)
 total.steps <- activity %>% 
         filter(is.na(steps) == FALSE) %>% 
@@ -107,16 +116,26 @@ plot1 <- plot1 + geom_histogram(binwidth = 2000, color = "black",
         ylim(0,25)
 plot1
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
 <br>
 
 Based on the histogram, it looks like the average number of steps this guy (let's call him Todd) takes in a day is probably somewhere around 11,000 steps. Let's check:
 
-```{r}
+
+```r
 # Calculate mean and median step totals
 mm.total.steps <- total.steps %>%
         summarize(mean = mean(total.steps),
                   median = median(total.steps))
 mm.total.steps
+```
+
+```
+## # A tibble: 1 x 2
+##       mean median
+##      <dbl>  <int>
+## 1 10766.19  10765
 ```
 <br>
 
@@ -131,7 +150,8 @@ Pretty close! Just under 11,000 steps a day on average.
 Now let's make a plot that shows what times of the day Todd is moving around the most. First we'll
 calculate the average number of steps for each time interval across all two months.
 
-```{r}
+
+```r
 # Calculate the average number of steps for each time interval throughout the day.
 pattern.steps <- activity %>% 
         filter(is.na(steps) == FALSE) %>%  
@@ -148,13 +168,23 @@ plot2 <- plot2 + geom_line() +
         theme
 plot2
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 <br>
 
 It looks like Todd is walking a lot during the day and hardly at all during the night. I think we can safely conclude that Todd is not a sleepwalker. There's also a sharp peak in activity just before 9:00 AM. Maybe Todd likes to go running in the morning? Let's find out exactly what time corresponds to the peak:
 
-```{r}
+
+```r
 # Find the max step count
 pattern.steps[which.max(pattern.steps$mean),]
+```
+
+```
+## # A tibble: 1 x 2
+##                  time     mean
+##                <dttm>    <dbl>
+## 1 2017-08-03 08:35:00 206.1698
 ```
 <br>
 
@@ -168,29 +198,73 @@ So the five-minute interval spanning from 8:35 - 8:40 AM is when Todd is taking 
 
 So far we've ignored the missing values in the **step** variable. Now let's try imputing values in their place. First let's see where the missing values occur.
 
-```{r}
-sum(!complete.cases(activity)) # there are 2304 missing values
 
+```r
+sum(!complete.cases(activity)) # there are 2304 missing values
+```
+
+```
+## [1] 2304
+```
+
+```r
 missing <- activity[!complete.cases(activity),]
 missing %>% count(date) # Only 8 days have missing values.
+```
+
+```
+## # A tibble: 8 x 2
+##         date     n
+##       <date> <int>
+## 1 2012-10-01   288
+## 2 2012-10-08   288
+## 3 2012-11-01   288
+## 4 2012-11-04   288
+## 5 2012-11-09   288
+## 6 2012-11-10   288
+## 7 2012-11-14   288
+## 8 2012-11-30   288
 ```
 <br>
 
 There are eight days where all the values are missing, but the rest of the dataset is complete. Let's try imputing the mean step total of each time interval that we calculated earlier into the missing values.
 
-```{r}
+
+```r
 activity2 <- activity %>% 
         left_join(pattern.steps, by = "time") %>% 
         mutate(steps = ifelse(is.na(steps) == TRUE, mean, steps)) %>% 
         select(-mean)
 pattern.steps[1,] #mean value we calculated
+```
+
+```
+## # A tibble: 1 x 2
+##         time     mean
+##       <dttm>    <dbl>
+## 1 2017-08-03 1.716981
+```
+
+```r
 head(activity2, 3)
+```
+
+```
+##       steps       date interval           date.time                time
+## 1 1.7169811 2012-10-01        0 2012-10-01 00:00:00 2017-08-03 00:00:00
+## 2 0.3396226 2012-10-01        5 2012-10-01 00:05:00 2017-08-03 00:05:00
+## 3 0.1320755 2012-10-01       10 2012-10-01 00:10:00 2017-08-03 00:10:00
+##   day.type
+## 1  weekday
+## 2  weekday
+## 3  weekday
 ```
 <br>
 
 You can see now the the mean value we calculated in **pattern.steps** now appears in **steps** where there used to be missing values. Sweet! Now let's take a look at that histogram again:
 
-```{r}
+
+```r
 # Re-calculate step totals
 total.steps2 <- activity2 %>% 
         group_by(date) %>% 
@@ -207,11 +281,14 @@ plot3 <- plot3 + geom_histogram(binwidth = 2000, boundary = 0,
         theme
 plot3
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
 <br>
 
 It looks basically the same as before. In fact, if you put it right next to the first graph, you'll find that the only bar that changed is the one right in the middle where the mean is:
 
-```{r message = FALSE}
+
+```r
 library(cowplot)
 
 plot1.3 <- ggplot(total.steps, aes(total.steps)) + 
@@ -228,11 +305,14 @@ plot4 <- plot_grid(plot1.3, plot3.1, align = "h", labels = c("NA's omitted", "Im
                      hjust = -.75)
 plot4
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
 <br>
 
 You can also calculate the new mean and median directly to compare them:
 
-```{r}
+
+```r
 # Calculate the new mean and median step totals
 mm2 <- total.steps2 %>% 
         summarize(mean = mean(total.steps),
@@ -241,7 +321,24 @@ mm2 <- total.steps2 %>%
 # Imputing values hasn't changed the mean or median at all
 
 mm.total.steps # original calculations
+```
+
+```
+## # A tibble: 1 x 2
+##       mean median
+##      <dbl>  <int>
+## 1 10766.19  10765
+```
+
+```r
 mm2 # second calculations
+```
+
+```
+## # A tibble: 1 x 2
+##       mean   median
+##      <dbl>    <dbl>
+## 1 10766.19 10766.19
 ```
 <br>
 
@@ -258,7 +355,8 @@ Now onto the last question...
 <br>
 
 To answer this we'll calculate the average number of steps per five-minute interval on weekdays and compare that to weekends. Here's the code:
-```{r}
+
+```r
 # Calculate average step totals
 wday.patterns <- activity2 %>% 
         group_by(day.type, time) %>% 
@@ -278,6 +376,8 @@ plot5 <- plot5 + geom_line() +
         theme
 plot5
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
 <br>
 
 Perfect! It looks, well, mostly the same on weekdays and weekends. I guess Todd's got a pretty good routine going for him!
